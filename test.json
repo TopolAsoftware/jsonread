@@ -1,0 +1,33 @@
+{
+  "test1" : "This is a string",
+  "test2" : false,
+  "test3" : true,
+  "test4" : null,
+  "test5" : 35.43,
+  "test6" : 142,
+  "test6a" : 142345473456354,
+  "test7" : [
+     "string1",
+     "string2"
+  ],
+  "test8" : [
+     {"sector1" : "value1", "sector2":"value2"},
+     {"sector1" : "value3", "sector2":"value4"},
+     {"sector1" : "value5", "sector2":"value6"}
+   ],
+  "\u0431\u0430\u043d\u043a" : "\u0410\u0432\u0430\u043b\u044c \u0431\u0430\u043d\u043a",
+  "part1" : {
+     "portion1" : {
+        "word1" : "box1",
+        "word2" : "box2",
+        "word3" : "box3"
+     }
+  },
+  "internal" : {
+    "" : {
+       "nonstandart" : {
+         "string" : "inside"
+       }
+    }
+  }
+}

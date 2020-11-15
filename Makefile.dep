@@ -1,0 +1,10 @@
+jsmn.o: jsmn.c jsmn.h
+jsonread.o: jsonread.c v2_iconv.h v2_jsmn.h v2_json.h v2_wrbuf.h \
+ v2_util.h jsmn.h
+utf8.o: utf8.c utf8.h
+v2_iconv.o: v2_iconv.c
+v2_jsmn.o: v2_jsmn.c v2_jsmn.h v2_json.h v2_wrbuf.h v2_util.h jsmn.h \
+ v2_iconv.h utf8.h
+v2_json.o: v2_json.c v2_json.h v2_wrbuf.h v2_util.h v2_iconv.h utf8.h
+v2_util.o: v2_util.c v2_util.h
+v2_wrbuf.o: v2_wrbuf.c v2_wrbuf.h v2_util.h
