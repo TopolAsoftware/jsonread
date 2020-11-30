@@ -1,4 +1,3 @@
-# SRCNAME=`grep "^int main" *.c | cut -d":" -f1 | cut -d"." -f1`
 SRCNAME=jsonread
 BINNAME=$(SRCNAME)
 
