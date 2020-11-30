@@ -1,3 +1,4 @@
+# SRCNAME=`grep "^int main" *.c | cut -d":" -f1 | cut -d"." -f1`
 SRCNAME=jsonread
 BINNAME=$(SRCNAME)
 
@@ -16,7 +17,7 @@ OBJ := $(patsubst %.c, %.o, $(SOURCES))
 all: $(BINNAME)
 
 $(BINNAME): $(OBJ) Makefile
-	$(CC) -o $(BINNAME) $(CFLAGS) $(LIBS) $(OBJ)
+	$(CC) -o $(BINNAME) $(CFLAGS) $(OBJ) $(LIBS)
 
 Makefile.dep:
 	echo \# > Makefile.dep
