@@ -27,4 +27,7 @@ clean:
 dep: clean
 	$(CC) -MM $(CFLAGS) *.c > Makefile.dep
 
-include Makefile.dep
+check: all
+	./jsonread test.json
+
+-include Makefile.dep
