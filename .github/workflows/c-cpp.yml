@@ -1,0 +1,21 @@
+name: JsonRead Parser
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Clean
+      run: make clean
+    - name: make
+      run: make
+    - name: make check
+      run: make check  

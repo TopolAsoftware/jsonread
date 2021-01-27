@@ -16,7 +16,7 @@ OBJ := $(patsubst %.c, %.o, $(SOURCES))
 all: $(BINNAME)
 
 $(BINNAME): $(OBJ) Makefile
-	$(CC) -o $(BINNAME) $(CFLAGS) $(LIBS) $(OBJ)
+	$(CC) -o $(BINNAME) $(CFLAGS) $(OBJ) $(LIBS)
 
 Makefile.dep:
 	echo \# > Makefile.dep
