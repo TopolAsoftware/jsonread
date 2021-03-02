@@ -55,7 +55,7 @@ typedef struct _json_lst_t {
     long long lnum;
     double dnum;
 
-    int bl; // Boolean 0=none, 1=true, 2=false - depricated - remove it and use "num" instead
+    //int bl; // Boolean 0=none, 1=true, 2=false - depricated - remove it and use "num" instead
 
     int open; // Marks open array or object
 } json_lst_t;
@@ -78,6 +78,8 @@ typedef struct json_box_s {
     int no_clean;  // 1 = Do not clean output buff - just add text
 
     int arr_no; // Array element number
+
+    str_lst_t *hdr;  // Extra headers line if ->header != 0
 
     // New interface for external box
     char *locale;   // Set local locale
@@ -102,17 +104,20 @@ int v2_json_none_lst(json_lst_t *in_json); // Marks all nodes as NONE
 json_field v2_json_type(json_lst_t *in_json);
 char *v2_json_type_str(json_lst_t *in_json); // Returns type as string
 
+// -----------------------------------------------------------------------------------------
 // Box functions
 int v2_json_new(json_box_t **p_box);
 int v2_json_free_box(json_box_t *in_jbox);
 int v2_json_add_node(json_box_t *in_jbox, char *in_id, json_field js_type);
-int v2_json_end(json_box_t *in_jbox, json_field js_type);
+int v2_json_add_end(json_box_t *in_jbox, json_field js_type);
 int v2_json_text(json_box_t *in_jbox);
 
+// -----------------------------------------------------------------------------------------
 int v2_json_locale(json_box_t *in_jbox, char *in_locale, int is_de); // Set locale (or de_locale) and assign iconv function
 // is_de == 0 - send from in_locale to UTF
 // is_de == 1 - receive from UTF to in_locale
 
+// -----------------------------------------------------------------------------------------
 // Defaultox functions
 int v2_json_free(void); // Frees all structure
 
@@ -130,6 +135,25 @@ int v2_json_add_int(char *in_id,    int in_num);
 int v2_json_add_lint(char *in_id  , long long in_lnum);
 int v2_json_add_double(char *in_id, double in_dnum);
 int v2_json_add_null(char *in_id);
+
+// -----------------------------------------------------------------------------------------
+// Thread Safe functions
+
+int v2_json_end(json_box_t *in_jbox);
+
+int v2_json_jobj(json_box_t *in_jbox, char *in_id, json_lst_t *in_json);
+
+int v2_json_arr(json_box_t *in_jbox, char *in_id);
+int v2_json_obj(json_box_t *in_jbox, char *in_id);
+
+int v2_json_str(json_box_t *in_jbox, char *in_id, char *in_val);
+int v2_json_bool(json_box_t *in_jbox, char *in_id, int is_true);
+int v2_json_int(json_box_t *in_jbox, char *in_id, int in_num);
+int v2_json_lint(json_box_t *in_jbox, char *in_id, long long in_lnum);
+int v2_json_double(json_box_t *in_jbox, char *in_id, double in_dnum);
+int v2_json_null(json_box_t *in_jbox, char *in_id);
+
+// -----------------------------------------------------------------------------------------
 
 int v2_json_prnone(json_box_t *in_jbox, json_lst_t *in_json); // Print one element
 

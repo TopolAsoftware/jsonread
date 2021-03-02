@@ -25,8 +25,14 @@
 #include <stdlib.h>
 
 #include "v2_json.h"
-#include "jsmn.h"
 
+/*
+ * WARNING!!! You have to add files jsnm.c and jsmn.h by Serge Zaitsev
+ * The faster json parser.
+ * https://github.com/zserge
+ */
+#define JSMN_HEADER 1
+#include "jsmn.h"
 
 typedef struct {
 

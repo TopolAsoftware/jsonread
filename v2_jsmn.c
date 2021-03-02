@@ -90,11 +90,11 @@ int vj_make_value(v2_jsmn_t *in_jsmn, char *in_name) {
     if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_OBJECT) {
 	if(in_jsmn->tcur) v2_json_add_node(in_jsmn->box, name, JS_OBJECT);
 	vj_make_object(in_jsmn);
-	if(in_jsmn->tcur) v2_json_end(in_jsmn->box, JS_OBJECT);
+	if(in_jsmn->tcur) v2_json_add_end(in_jsmn->box, JS_OBJECT);
     } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_ARRAY) {
 	v2_json_add_node(in_jsmn->box, name, JS_ARRAY);
 	vj_make_array(in_jsmn);
-	v2_json_end(in_jsmn->box, JS_ARRAY);
+	v2_json_add_end(in_jsmn->box, JS_ARRAY);
     } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_STRING) {
 	v2_json_add_node(in_jsmn->box, name, JS_STRING);
 	v2_let_var(&in_jsmn->box->tek->str, vj_get_string(in_jsmn));
@@ -176,7 +176,7 @@ static int v2_jsmn_parse_any(v2_jsmn_t *in_jsmn) {
     if(!in_jsmn->b->pos[0]) return(52);
     if(!in_jsmn->b->pos[1]) return(53);
 
-    // -vvv- not needed -vvv-
+    // -vvv- not needs -vvv-
     if(in_jsmn->b->pos[0] != '{') {
 	if(in_jsmn->b->pos[0] != '[') {
 	    v2_add_debug(1, "This is not json: %s", in_jsmn->b->pos);
@@ -188,7 +188,7 @@ static int v2_jsmn_parse_any(v2_jsmn_t *in_jsmn) {
     }
 
     if(in_jsmn->b->pos[in_jsmn->b->yet] != '\0')  return(17313); // Non zero end of buffer - required
-    // -^^^- not needed -^^^-
+    // -^^^- not needs -^^^-
 
     // Count toekns value
     in_jsmn->tmax=0;
@@ -198,7 +198,7 @@ static int v2_jsmn_parse_any(v2_jsmn_t *in_jsmn) {
     }
 
     if(in_jsmn->tmax == 0)      in_jsmn->tmax=t_max;
-    if(in_jsmn->tmax == 0)      return(17314); // Not fund any json separator... Maybe wrong for 1-element array
+    if(in_jsmn->tmax == 0)      return(17314); // Not found any json separator... Maybe wrong for 1-element array
     if(in_jsmn->tmax > 5000000) return(17315); // Look so hight size... What to do?
 
     in_jsmn->tmax*=2; // Make 2 times more, each ':' gives maximal 2 tokens

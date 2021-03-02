@@ -22,7 +22,7 @@
 
 // ERROR_CODE 173XX : 17350 - 17399
 
-json_box_t json_box; // Default box
+json_box_t json_box; // Default box context
 
 // External function
 //int (*v2_json_fun)(json_lst_t *in_json)=NULL;
@@ -161,7 +161,7 @@ char *v2_json_type_str(json_lst_t *in_json) {
 int v2_json_is_parent(json_lst_t *in_json) {
     if(!in_json) return(0);
     if(in_json->js_type == JS_OBJECT) return(1);
-    if(in_json->js_type == JS_ARRAY) return(1);
+    if(in_json->js_type == JS_ARRAY)  return(1);
     return(0);
 }
 /* =================================================================== */
@@ -228,12 +228,13 @@ int v2_json_add_node(json_box_t *in_jbox, char *in_id, json_field js_type) {
     return(v2_json_add_json(in_jbox, json_tmp));
 }
 /* =================================================================== */
-int v2_json_end(json_box_t *in_jbox, json_field js_type) {
+// Any child object or array
+int v2_json_add_end(json_box_t *in_jbox, json_field js_type) {
 
     if(!in_jbox)      return(17354);
     if(!in_jbox->tek) return(17355);
 
-    if(in_jbox->tek->open==1) { // Just close
+    if(in_jbox->tek->open==1) { // Just close started parent
 	in_jbox->tek->open=0;
 	if(in_jbox->tek->js_type == JS_OBJECT) in_jbox->tek->js_type=JS_NULL; // Object can not be empty
         return(0);
@@ -244,21 +245,117 @@ int v2_json_end(json_box_t *in_jbox, json_field js_type) {
     in_jbox->tek=in_jbox->tek->parent;
 
     if(!in_jbox->tek->open)              return(17356); // Try to close not opened object
-    if(in_jbox->tek->js_type != js_type) return(17357); // And check type
+
+    if(js_type != JS_NONE) { // Allow to close any parent objects (obj or arr)
+	if(in_jbox->tek->js_type != js_type) return(17357); // And check type
+    }
 
     return(0);
 }
 /* =================================================================== */
-// Static functions
+/* TrdSafe functions */
+/* =================================================================== */
+int v2_json_end(json_box_t *in_jbox) {
+
+    return(v2_json_add_end(in_jbox, JS_NONE)); // Autodetect
+}
+/* =================================================================== */
+int v2_json_arr(json_box_t *in_jbox, char *in_id) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_ARRAY))) return(rc);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_obj(json_box_t *in_jbox, char *in_id) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_OBJECT))) return(rc);
+
+    return(0);
+}
+/* =================================================================== */
+ // Add ready object
+int v2_json_jobj(json_box_t *in_jbox, char *in_id, json_lst_t *in_json) {
+    int rc=0;
+
+    if(!in_json) return(v2_json_null(in_jbox, in_id)); // Add null if object empty
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_OBJECT))) return(rc);
+    if((rc=v2_json_add_json(in_jbox, in_json)))          return(rc);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_str(json_box_t *in_jbox, char *in_id, char *in_val) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_STRING))) return(rc);
+    v2_let_var(&in_jbox->tek->str, in_val);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_bool(json_box_t *in_jbox, char *in_id, int is_true) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_BOOLEAN))) return(rc);
+    in_jbox->tek->num=is_true;
+    v2_let_var(&in_jbox->tek->str, is_true?"true":"false");
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_int(json_box_t *in_jbox, char *in_id, int in_num) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_INT))) return(rc);
+    in_jbox->tek->num=in_num;
+    in_jbox->tek->str=v2_string("%d", in_num);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_lint(json_box_t *in_jbox, char *in_id, long long in_lnum) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_LONG))) return(rc);
+    in_jbox->tek->lnum=in_lnum;
+    in_jbox->tek->str=v2_string("%lld", in_lnum);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_double(json_box_t *in_jbox, char *in_id, double in_dnum) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_DOUBLE))) return(rc);
+    in_jbox->tek->dnum=in_dnum;
+    in_jbox->tek->str=v2_string("%lld", in_dnum);
+
+    return(0);
+}
+/* =================================================================== */
+int v2_json_null(json_box_t *in_jbox, char *in_id) {
+    int rc=0;
+
+    if((rc=v2_json_add_node(in_jbox, in_id, JS_NULL))) return(rc);
+    v2_let_var(&in_jbox->tek->str, "null");
+
+    return(0);
+}
+/* =================================================================== */
+/* Static functions */
 /* =================================================================== */
 int v2_json_end_arr(void) {
 
-    return(v2_json_end(&json_box, JS_ARRAY));
+    return(v2_json_add_end(&json_box, JS_ARRAY));
 }
 /* =================================================================== */
 int v2_json_end_obj(void) {
 
-    return(v2_json_end(&json_box, JS_OBJECT));
+    return(v2_json_add_end(&json_box, JS_OBJECT));
 }
 /* =================================================================== */
 int v2_json_add_arr(char *in_id) {
@@ -350,6 +447,7 @@ int v2_json_add_null(char *in_id) {
 
     return(0);
 }
+/* =================================================================== */
 /* =================================================================== */
 int v2_json_escape_quotas(char *out_str, size_t out_size, char *in_str) {
     int x, y;
@@ -493,6 +591,7 @@ int v2_json_prnone(json_box_t *in_jbox, json_lst_t *in_json) {
 /* =================================================================== */
 // Move structure to output buffer
 int v2_json_text(json_box_t *in_jbox) {
+    str_lst_t *str_tmp=NULL;
     int is_alloc=0;
     int rc=0;
 
@@ -504,7 +603,11 @@ int v2_json_text(json_box_t *in_jbox) {
 	if((rc=v2_wrbuf_new(&in_jbox->b))) return(rc);
     }
 
-    if(in_jbox->header) v2_wrbuf_printf(in_jbox->b, "Content-Type: application/json; charset=\"utf-8\"\n\n");
+    if(in_jbox->header) {
+	v2_wrbuf_printf(in_jbox->b, "Content-Type: application/json; charset=\"utf-8\"\n");
+	FOR_LST(str_tmp, in_jbox->hdr) v2_wrbuf_printf(in_jbox->b, "%s%s%s\n", str_tmp->key, str_tmp->str?": ":"", v2_nn(str_tmp->str));
+	v2_wrbuf_printf(in_jbox->b, "\n");
+    }
 
     in_jbox->tek = NULL;
     in_jbox->spaces = 0;
@@ -559,7 +662,7 @@ char *v2_json_out(json_lst_t *in_json) {
     jbox->lst = in_json;
 
     if(v2_wrbuf_new(&jbox->b)) return(NULL);
-    if(v2_json_text(jbox)) return(NULL);
+    if(v2_json_text(jbox))     return(NULL);
 
     out=v2_move(&jbox->b->buf);
     v2_wrbuf_free(&jbox->b);
