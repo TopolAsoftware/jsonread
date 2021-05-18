@@ -8,7 +8,7 @@ https://github.com/zserge/jsmn
 
 ## Build Util
 
-Util depends only from libc and you have not any affitional libs to be installed. To build util just run commands:
+Util depends only from libc and you have not any additional libs to be installed. To build util just run commands:
 
 ```sh
 $ make clean && make
