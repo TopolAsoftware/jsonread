@@ -50,6 +50,7 @@ int jr2_fm_locale(char *in_str) {
 }*/
 /* ======================================================== */
 int main(int argc, char *argv[], char *argp[]) {
+    //json_lst_t *jsn=NULL;
     char *in_file=NULL;
     int rc=0;
 
@@ -81,6 +82,8 @@ int main(int argc, char *argv[], char *argp[]) {
 	printf("[]\n");
 	return(0);
     }
+
+    //FOR_LST(jsn, jr_jsmn.json) printf("JS: %s\n", jsn->id);
 
     jr_jsmn.box->ident=4;
     jr_jsmn.box->no_escape=1;

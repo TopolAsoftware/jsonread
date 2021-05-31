@@ -301,7 +301,7 @@ int v2_json_bool(json_box_t *in_jbox, char *in_id, int is_true) {
     int rc=0;
 
     if((rc=v2_json_add_node(in_jbox, in_id, JS_BOOLEAN))) return(rc);
-    in_jbox->tek->num=is_true;
+    if(is_true) in_jbox->tek->num=1;
     v2_let_var(&in_jbox->tek->str, is_true?"true":"false");
 
     return(0);
@@ -356,6 +356,11 @@ int v2_json_end_arr(void) {
 int v2_json_end_obj(void) {
 
     return(v2_json_add_end(&json_box, JS_OBJECT));
+}
+/* =================================================================== */
+int v2_json_end_any(void) { // Close ARAAY or OBJECT
+
+    return(v2_json_end(&json_box));
 }
 /* =================================================================== */
 int v2_json_add_arr(char *in_id) {

@@ -36,7 +36,7 @@ int v2_jsmn_init(v2_jsmn_t *in_jsmn) {
 
     jsmn_init(&in_jsmn->parser);
 
-    if(in_jsmn->tokens) {
+    if(in_jsmn->tokens) { // v2_free()
         free(in_jsmn->tokens);
         in_jsmn->tokens=NULL;
     }
@@ -54,13 +54,18 @@ char *vj_get_string(v2_jsmn_t *in_jsmn) {
     static char strtmp[MAX_STRING_LEN];
     static char strtm1[MAX_STRING_LEN];
     char *out=NULL;
-    int x=0;
-    int y=0;
+    int len=in_jsmn->tokens[in_jsmn->tcur].end-in_jsmn->tokens[in_jsmn->tcur].start+1; // add '\n'
+    //int x=0;
+    //int y=0;
 
-    for(y=in_jsmn->tokens[in_jsmn->tcur].start; y<in_jsmn->tokens[in_jsmn->tcur].end && x<MAX_STRING_LEN; y++, x++) {
-	strtmp[x]=in_jsmn->b->pos[y];
-    }
-    strtmp[x]='\0';
+    if(len > MAX_STRING_LEN) len = MAX_STRING_LEN; // Trunkate long string
+
+    snprintf(strtmp, len, in_jsmn->b->pos+in_jsmn->tokens[in_jsmn->tcur].start);
+
+    //for(y=in_jsmn->tokens[in_jsmn->tcur].start; y<in_jsmn->tokens[in_jsmn->tcur].end && x<MAX_STRING_LEN; y++, x++) {
+    //    strtmp[x]=in_jsmn->b->pos[y];
+    //}
+    //strtmp[x]='\0';
 
     u8_unescape(strtm1, MAX_STRING_LEN, strtmp);
 
@@ -88,43 +93,33 @@ int vj_make_value(v2_jsmn_t *in_jsmn, char *in_name) {
     }
 
     if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_OBJECT) {
-	if(in_jsmn->tcur) v2_json_add_node(in_jsmn->box, name, JS_OBJECT);
+	if(in_jsmn->tcur) v2_json_obj(in_jsmn->box, name); // Add object name, if it is not root obj
 	vj_make_object(in_jsmn);
-	if(in_jsmn->tcur) v2_json_add_end(in_jsmn->box, JS_OBJECT);
+	if(in_jsmn->tcur) v2_json_end(in_jsmn->box);
     } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_ARRAY) {
-	v2_json_add_node(in_jsmn->box, name, JS_ARRAY);
+	v2_json_arr(in_jsmn->box, name);
 	vj_make_array(in_jsmn);
-	v2_json_add_end(in_jsmn->box, JS_ARRAY);
+	v2_json_end(in_jsmn->box);
     } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_STRING) {
-	v2_json_add_node(in_jsmn->box, name, JS_STRING);
-	v2_let_var(&in_jsmn->box->tek->str, vj_get_string(in_jsmn));
-    } else {
+	v2_json_str(in_jsmn->box, name, vj_get_string(in_jsmn));
+    } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_PRIMITIVE) { // What to do?
         in_val=vj_get_string(in_jsmn);
 	if(!in_val) {
-	    v2_json_add_node(in_jsmn->box, name, JS_NULL);
-	    v2_let_var(&in_jsmn->box->tek->str, "null");
+	    v2_json_null(in_jsmn->box, name);
 	} else if(in_val[0] == 'n') {
-	    v2_json_add_node(in_jsmn->box, name, JS_NULL);
-	    v2_let_var(&in_jsmn->box->tek->str, "null");
+	    v2_json_null(in_jsmn->box, name);
 	} else if(in_val[0] == 'f') {
-	    v2_json_add_node(in_jsmn->box, name, JS_BOOLEAN);
-	    v2_let_var(&in_jsmn->box->tek->str, "false");
+	    v2_json_bool(in_jsmn->box, name, 0);
 	} else if(in_val[0] == 't') {
-	    v2_json_add_node(in_jsmn->box, name, JS_BOOLEAN);
-	    v2_let_var(&in_jsmn->box->tek->str, "true");
-            in_jsmn->box->tek->num=1; // True
+	    v2_json_bool(in_jsmn->box, name, 1);
 	} else if(strchr(in_val, '.')) {
-	    v2_json_add_node(in_jsmn->box, name, JS_DOUBLE);
-	    in_jsmn->box->tek->dnum=atof(in_val);
-            in_jsmn->box->tek->str=v2_string("%g", in_jsmn->box->tek->dnum);
+	    v2_json_double(in_jsmn->box, name, atof(in_val));
 	} else {
-	    v2_json_add_node(in_jsmn->box, name, JS_LONG);
-            in_jsmn->box->tek->lnum=atof(in_val);
-            in_jsmn->box->tek->str=v2_string("%lld", in_jsmn->box->tek->lnum);
+	    v2_json_lint(in_jsmn->box, name, atoll(in_val));
 	}
+    } else if(in_jsmn->tokens[in_jsmn->tcur].type==JSMN_UNDEFINED) { // What to do?
+	// Undefined primitive ???
     }
-
-    in_jsmn->json=in_jsmn->box->lst; // Copy pointer to main value
 
     return(0);
 }
@@ -145,19 +140,21 @@ int vj_make_object(v2_jsmn_t *in_jsmn) {
     char str_name[MAX_STRING_LEN];
     int nums=in_jsmn->tokens[in_jsmn->tcur].size;
     int x=0;
-    int is_name=0;
+    //int is_name=0;
     int rc=0;
 
     for(x=0; x<nums && !rc; x++) {
 	in_jsmn->tcur++;
 
 	// 1. Name
-	if((is_name=1-is_name)) {
+	//if((is_name=1-is_name)) {
 	    if(in_jsmn->tokens[in_jsmn->tcur].type != JSMN_STRING) return(17340); // This is not name
 	    sprintf(str_name, "%s", vj_get_string(in_jsmn));
-	    continue;
-	}
+	//    continue;
+	//}
 	// Value
+
+        in_jsmn->tcur++;
 	rc=vj_make_value(in_jsmn, str_name);
     }
 
@@ -218,8 +215,11 @@ static int v2_jsmn_parse_any(v2_jsmn_t *in_jsmn) {
 
     if(rc) return(rc);
 
-    return(vj_make_value(in_jsmn, NULL));
-    //return(0);
+    if((rc=vj_make_value(in_jsmn, NULL))) return(rc);
+
+    in_jsmn->json=in_jsmn->box->lst; // Copy pointer to main value
+
+    return(0);
 }
 /* ========================================================================= */
 int v2_jsmn_parse_file(v2_jsmn_t *in_jsmn, char *in_file) {

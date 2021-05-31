@@ -63,7 +63,7 @@ int v2_wrbuf_new(wrbuf_t **p_wrf) {
 /* ================================================================ */
 int v2_wrbuf_free(wrbuf_t **p_wrf) {
 
-    if(!p_wrf) return(0);
+    if(!p_wrf)  return(0);
     if(!*p_wrf) return(0);
 
     v2_wrbuf_reset(*p_wrf);

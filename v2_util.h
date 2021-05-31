@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1997-2020 Oleg Vlasenko <vop@unity.net>
+ *  Copyright (c) 1997-2021 Oleg Vlasenko <vop@unity.net>
  *  All Rights Reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -101,7 +101,6 @@
     }\
     list=outl; }
 
-
 // Types....
 
 // == 0 - hard off (can not be set on)
@@ -142,19 +141,12 @@ typedef struct _str_lst_t {
     };
 } str_lst_t;
 
-extern str_lst_t *v2_err_lst;
-extern int (*v2_hook_error)(str_lst_t *err_rec); // Hook for error and debug
-
-extern str_lst_t *v2_css_lst;
-
-extern str_lst_t *v2_wo_lst;
-extern str_lst_t *v2_wo_tek;
-extern str_lst_t *v2_wo_lst_pure;
 
 extern char *v2_str_zero;
 
 extern int v2_debug; // Debug level for add debug
 extern int v2_debug_time; // Print time before debug message
+extern char *v2_debug_pref; // Prefix for debug output
 
 #define v2_kaput(n) v2_abort(n)
 void v2_abort(char *in_msg); // Stop programm execution
@@ -177,13 +169,14 @@ void send_fd(FILE *f, FILE *fd);
 // ------------------------------------------------------------------------------------------------------------------
 FILE *xfopen_read(char *file, ...);
 FILE *xfopen_write(char *file, ...);
-// int xfread_cfg(str_lst_t **pt_lst, char *file, ...); // Read config file - moved to v2_lstr.fcfg()
-int xfread(str_lst_t **pt_lst, char *file, ...); // rc=-745 == XFREAD_NOT_FOUND - file not found
-int xfwrite(str_lst_t *in_lst, int (*wr_str)(FILE*, str_lst_t *), char *file, ...); // wr_str - customed write funct
 
-int xfread_new(str_lst_t **pt_lst, char *file, ...); // Uses sfread() as core
+//int xfread(str_lst_t **pt_lst, char *file, ...); // rc=-745 == XFREAD_NOT_FOUND - file not found
+//int xfwrite(str_lst_t *in_lst, int (*wr_str)(FILE*, str_lst_t *), char *file, ...); // wr_str - customed write funct
 
-int sfread_print(char *in_str, void *in_data); // user as rd_str function for sfread
+//int xfread_old(str_lst_t **pt_lst, char *file, ...); // Uses sfread() as core
+//int xfread_new(str_lst_t **pt_lst, char *file, ...); // Uses sfread() as core
+
+int sfread_print(char *in_str, void *in_data); // use as rd_str function for sfread()
 
 int sfreadf(int (*rd_str)(char*, void*), void *pass_data, char *file, ...); // New generation
 int sfread(int (*rd_str)(char*, void*), void *pass_data, char *file);     // New generation
@@ -197,8 +190,8 @@ int v2_dir(mode_t mode, char *in_dir, ...); // Check and create diretory, correc
 
 // Read dir into in_list, or just call filter (0 = good entr, 1 == bad entr, >1 = error);
 // in_data just passed to filter
-int v2_readdir(str_lst_t **p_list, int (*filter)(char*,void*), void *in_data, char *in_dir, ...);
-
+//int v2_readdir(str_lst_t **p_list, int (*filter)(char*,void*), void *in_data, char *in_dir, ...);
+// Move to v2_lstr_rdir()
 
 char *v2_xrc(int code); // Prints error code
 // ------------------------------------------------------------------------------------------------------------------
@@ -295,70 +288,6 @@ void v2_purge_spaces(char *in_str);
 int v2_str_trim(char *in_str, char *in_trm);
 
 int v2_vop_rename(off_t f_size, char *t_name, char *f_name);
-
-// ------------------------------------------------------------------------------------------------------------------
-// ListSTR functions
-str_lst_t *v2_add_lstr_head(str_lst_t **p_str, char *in_key, char *in_str, time_t a_time, time_t b_time);
-str_lst_t *v2_add_lstr_tail(str_lst_t **p_str, char *in_key, char *in_str, time_t a_time, time_t b_time);
-str_lst_t *v2_add_lstr_sort(str_lst_t **p_str, char *in_key, char *in_str, time_t a_time, time_t b_time);
-
-int v2_lstr_add_data(str_lst_t *i_str, void *in_data);
-
-int v2_lstr_sort(str_lst_t **p_str, int (*fun_sort)(str_lst_t *, str_lst_t *)); // Sort list with user's function
-
-str_lst_t *v2_lstr_separate(str_lst_t *i_str);                                  // Separate key to key and str
-int v2_lstr_separate_by(str_lst_t *i_str, char by_ch);                          // Separate by key
-int v2_lstr_separate_lst_by(str_lst_t *i_str, char by_ch);                      // Separate all list
-
-#define v2_lstr_spr_by(n, m) v2_lstr_separate_by((n), (m))
-#define v2_lstr_spr(n) v2_lstr_separate(n)
-
-int v2_lstr_rback(str_lst_t **p_str);
-int v2_lstr_free(str_lst_t **p_str);
-str_lst_t *v2_lstr_rmv(str_lst_t *in_lstr); // Set is_rmv
-
-str_lst_t *v2_lstr_add_tail(str_lst_t **in_parent, str_lst_t *in_tail); // Add in_tail at the end of in_parent list
-
-str_lst_t *v2_lstr_find(str_lst_t *p_str, char *in_key, char *in_str); // Finds key/str pair
-str_lst_t *v2_get_lstr_key(str_lst_t *p_str, char *in_key);            // Get str rec by key
-char *v2_get_lstr_str(str_lst_t *p_str, char *in_key);                 // Get string content
-void *v2_get_lstr_data(str_lst_t *p_str, char *in_key);                // Returns ->data if extsts
-char *v2_lstr_str(str_lst_t *in_str);                                  // Returns ->str if exists, or ->key
-
-str_lst_t *v2_str_to_lstr(char *in_str, char spr);
-
-// ------------------------------------------------------------------------------------------------------------------
-// ERROR functions
-int v2_add_err(int err, int level, char *err_msg); // Main base functino
-
-
-int v2_prn_error(void);                           // Print error, warning and debug
-int v2_add_error(char *err_form, ...);            // Add error string to the list
-int v2_ret_error(int err, char *err_form, ...);   // Add error with code "err", and return it (code).
-int v2_add_debug(int level, char *err_form, ...); // Add warning (level == 1) and debug (>1) string to the list
-int v2_add_warn(char *warn_form, ...);            // Easy form of v2_add_debug(1, ...)
-int v2_is_error(int in_err);                      // Check if error exists and get latest error code, if in_err == 0
-int v2_del_error(void);                           // Delete all errors into list
-
-// ------------------------------------------------------------------------------------------------------------------
-// WebOpts functions
-char *v2_wo_key(char *key);                    // Get str of this key
-char *v2_wo_keyf(char *key_format, ...);       // Get str of this key in format
-char *v2_wo_var(char **pvar, char *in_key);    // Let (set) var from wo_lst, freed it before
-int v2_wo_sflg(sflg_t *in_sflg, char *in_key); // Set sflg variable, if key exists
-int v2_wo_post(int is_uniq);                   // Read POST options
-int v2_wo_get(int is_uniq);                    // Read GET options
-int v2_wo_read(char *in_str, int is_uniq);     // Read options from string
-int v2_wo_print(char *end_str);                // Prints wo list, each string finalized be end_str
-int v2_wo_add_var(char **p_var, char *wo_key); // Add value from wo list
-
-// ------------------------------------------------------------------------------------------------------------------
-// CSS
-int v2_css_read(str_lst_t **in_list, char *in_file); // Read css list from the file
-int v2_css_print(str_lst_t *in_css); // Print CSS table output
-// ------------------------------------------------------------------------------------------------------------------
-// V2_ARG
-//v2_arg_t *v2_arg(v2_arg_t *in_arg, char *in_str);
 
 char **v2_argv(char *in_str);
 int v2_argc(char **in_argv);

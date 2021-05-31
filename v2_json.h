@@ -20,7 +20,8 @@
 #define _V2_JSON_H 1
 
 #include "v2_wrbuf.h"
-#include "v2_util.h"
+#include "v2_err.h"
+//#include "v2_util.h"
 
 typedef enum {
     JS_NONE,
@@ -118,21 +119,23 @@ int v2_json_locale(json_box_t *in_jbox, char *in_locale, int is_de); // Set loca
 // is_de == 1 - receive from UTF to in_locale
 
 // -----------------------------------------------------------------------------------------
-// Defaultox functions
+// Default functions
 int v2_json_free(void); // Frees all structure
-
-int v2_json_add_arr(char *in_id);
-int v2_json_end_arr(void);
 
 int v2_json_add_jobj(char *in_id, json_lst_t *in_json); // Add ready object
 
 int v2_json_add_obj(char *in_id);
 int v2_json_end_obj(void);
 
+int v2_json_add_arr(char *in_id);
+int v2_json_end_arr(void);
+
+int v2_json_end_any(void); // Close ARAAY or OBJECT
+
 int v2_json_add_str(char *in_id,    char *in_val);
 int v2_json_add_bool(char *in_id,   int is_true);
 int v2_json_add_int(char *in_id,    int in_num);
-int v2_json_add_lint(char *in_id  , long long in_lnum);
+int v2_json_add_lint(char *in_id,   long long in_lnum);
 int v2_json_add_double(char *in_id, double in_dnum);
 int v2_json_add_null(char *in_id);
 
