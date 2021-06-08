@@ -60,7 +60,7 @@ char *vj_get_string(v2_jsmn_t *in_jsmn) {
 
     if(len > MAX_STRING_LEN) len = MAX_STRING_LEN; // Trunkate long string
 
-    snprintf(strtmp, len, in_jsmn->b->pos+in_jsmn->tokens[in_jsmn->tcur].start);
+    snprintf(strtmp, len, "%s", in_jsmn->b->pos+in_jsmn->tokens[in_jsmn->tcur].start);
 
     //for(y=in_jsmn->tokens[in_jsmn->tcur].start; y<in_jsmn->tokens[in_jsmn->tcur].end && x<MAX_STRING_LEN; y++, x++) {
     //    strtmp[x]=in_jsmn->b->pos[y];
